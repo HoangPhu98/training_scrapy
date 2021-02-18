@@ -10,6 +10,7 @@ class SpingerSpider(scrapy.Spider):
     #     'https://link.springer.com/journals/a/1'
     # ]
 
+    # An iterable of Requests to crawl from
     def start_requests(self):
         urls = [
             'https://link.springer.com/journals/{}/1'.format(chr(i+97)) for i in range(26)
@@ -18,18 +19,22 @@ class SpingerSpider(scrapy.Spider):
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse)
 
+    # Method to handle the response downloaded for each requests made
     def parse(self, response):
+        # Redirect to journal information page
         info_links = response.xpath(
             '//main/ol/li[@class="c-atoz-list__item"]/a[@class="c-atoz-list__link"]/@href').getall()
         for info_link in info_links:
             journal_id = info_link.split('/')[-1]
             yield response.follow('https://www.springer.com/journal/{}'.format(journal_id), callback=self.parse_journal, method='GET')
 
+        # Next page in list journal page
         next_page = response.xpath('//main/div[@class="c-atoz-heading interface-bar"]//nav[@class="c-pagination-listed"]/ol/li/a[@rel="next"]/@href').get()
         logging.info('URL next_page: %s', next_page)
         if next_page != None:
             yield response.follow(next_page, self.parse)
 
+    # Crawl metrics of journal
     def parse_journal(self, response):
         item = JournalMetric()
         logging.info('SplitURL: {}'.format(response.request.url.split("/")))
