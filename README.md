@@ -1,6 +1,5 @@
 
 
-
 ## Test
 
 ```
@@ -11,3 +10,5 @@ scrapy crawl spinger
 
 ```bash
 scrapy crawl spinger -o items.json -t json
+# training_scrapy
+Training scrapy on springer.com domain to get metrics of journals
